@@ -1,0 +1,9 @@
+# Nao enviar estes itens para o contexto de build do Docker
+target/
+.git/
+.idea/
+*.iml
+frontend/node_modules/
+frontend/dist/
+*.log
+*.md

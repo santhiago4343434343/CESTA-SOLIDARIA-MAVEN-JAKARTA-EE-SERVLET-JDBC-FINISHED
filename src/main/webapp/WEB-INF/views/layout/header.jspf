@@ -1,0 +1,54 @@
+<%-- =====================================================================
+     header.jspf  -  Cabecalho compartilhado por TODAS as telas.
+     Menu muda conforme o papel:
+       - ADMIN  -> link "Pessoas" (gestao)
+       - USER   -> link "Meu cadastro" (/perfil)
+     Isso e' so' UX; a regra de verdade e' garantida no servidor
+     (AutenticacaoFilter).
+===================================================================== --%>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><c:out value="${empty tituloPagina ? 'Sistema de Cadastro' : tituloPagina}"/></title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
+</head>
+<body>
+<header class="navbar">
+    <a class="brand" href="${pageContext.request.contextPath}/">&#x1F9FA; Cesta Solidaria</a>
+    <nav>
+        <a href="${pageContext.request.contextPath}/">Inicio</a>
+
+        <%-- Gestao: so' o ADMIN ve --%>
+        <c:if test="${sessionScope.papel == 'ADMIN'}">
+            <a href="${pageContext.request.contextPath}/pessoas">Pessoas</a>
+        </c:if>
+
+        <%-- Area do beneficiario: so' o USER ve --%>
+        <c:if test="${sessionScope.papel == 'USER'}">
+            <a href="${pageContext.request.contextPath}/perfil">Meu cadastro</a>
+        </c:if>
+
+        <c:choose>
+            <c:when test="${not empty sessionScope.usuarioLogado}">
+                <span class="user">Ola, <c:out value="${sessionScope.usuarioLogado}"/></span>
+                <a href="${pageContext.request.contextPath}/login?acao=sair">Sair</a>
+            </c:when>
+            <c:otherwise>
+                <a href="${pageContext.request.contextPath}/login">Entrar</a>
+            </c:otherwise>
+        </c:choose>
+    </nav>
+</header>
+
+<main class="container">
+    <%-- Mensagem flash (sucesso/erro/info) definida apos um redirect --%>
+    <c:if test="${not empty sessionScope.msg}">
+        <div class="alert alert-${sessionScope.msgTipo}">
+            <c:out value="${sessionScope.msg}"/>
+        </div>
+        <c:remove var="msg" scope="session"/>
+        <c:remove var="msgTipo" scope="session"/>
+    </c:if>
+

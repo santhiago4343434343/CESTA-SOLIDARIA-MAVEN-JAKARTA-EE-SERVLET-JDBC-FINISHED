@@ -1,0 +1,22 @@
+# --- Compilação e Build ---
+target/
+out/
+build/
+
+# --- Configurações da IDE (IntelliJ) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+
+# --- .env ---
+*.env
+*:Zone.Identifier

@@ -1,0 +1,96 @@
+# ============================================================
+#  docker-compose - Cesta Solidaria
+#  Banco: MySQL 8 (ativo)  |  MariaDB fica como opcao comentada.
+#  Subir:    docker compose up --build
+#  Derrubar: docker compose down     (com -v apaga os dados do banco)
+# ============================================================
+ 
+services:
+  # ---------------- Banco: MySQL 8 (ativo) ----------------
+  db:
+    image: mysql:8.4
+    container_name: cesta-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: tomcat_database
+      MYSQL_USER: cesta
+      MYSQL_PASSWORD: cesta123
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      # host:container - se a 3306 ja estiver ocupada, troque para 3307:3306
+      - "3307:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+      # cria o schema (com a coluna status) no 1o boot do banco:
+      - ./script.sql:/docker-entrypoint-initdb.d/01-script.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+ 
+  # ---------------- phpMyAdmin (painel web do banco) ----------------
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: cesta-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db          # aponta para o servico do banco
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"           # a app usa a 8080, entao o painel fica na 8081
+ 
+  # ---------------- Banco: MariaDB (opcao) ----------------
+  # Para usar MariaDB no lugar do MySQL: comente TODO o servico "db" acima
+  # e descomente este bloco (o resto do arquivo continua igual).
+  #
+  # db:
+  #   image: mariadb:11
+  #   container_name: cesta-db
+  #   restart: unless-stopped
+  #   environment:
+  #     MARIADB_DATABASE: tomcat_database
+  #     MARIADB_USER: cesta
+  #     MARIADB_PASSWORD: cesta123
+  #     MARIADB_ROOT_PASSWORD: root
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - dbdata:/var/lib/mysql
+  #     - ./script.sql:/docker-entrypoint-initdb.d/01-script.sql:ro
+  #   healthcheck:
+  #     test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 10
+ 
+  # ---------------- Aplicacao (Tomcat + .war) ----------------
+  app:
+    build: .
+    container_name: cesta-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # so sobe depois que o banco esta pronto
+    environment:
+      # host = "db" (nome do servico), NAO localhost:
+      DB_URL: "jdbc:mysql://db:3306/tomcat_database?useSSL=false&allowPublicKeyRetrieval=true"
+      DB_USER: cesta
+      DB_PASSWORD: cesta123
+      # Credenciais do Mailtrap: vêm do arquivo .env (veja .env.example).
+      # Se ficarem vazias, o envio de e-mail e' apenas pulado.
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      # Chave da IA (Gemini) para o chatbot. Vem do .env; se vazia, o chat
+      # responde com um erro amigavel em vez de quebrar.
+      IA_API_KEY: ${IA_API_KEY:-}
+      # Secret key do Google reCAPTCHA (validacao do cadastro no servidor).
+      # Sem ela, o cadastro trava com "Confirme que voce nao e' um robo".
+      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET:-}
+    ports:
+      - "8080:8080"
+ 
+volumes:
+  dbdata:

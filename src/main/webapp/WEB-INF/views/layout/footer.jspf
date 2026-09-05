@@ -1,0 +1,184 @@
+<%--============================================================footer.jspf - Rodape compartilhado. Fecha as tags
+    abertas no header.jspf (main, body, html).============================================================--%>
+    </main>
+    <footer class="rodape">
+        Projeto didatico &middot; Jakarta EE (Servlet + JSP + JSTL) &middot; Tomcat 10.1
+    </footer>
+
+    <%--=====Mostrar/ocultar senha (icone do olho)=====--%>
+        <script>
+            const olhoAberto = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>';
+            const olhoFechado = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12s4-6 10-6 10 6 10 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="8" cy="15" r="1.1" fill="currentColor"/><circle cx="16" cy="15" r="1.1" fill="currentColor"/></svg>';
+
+            function verSenha(id, botao) {
+                const campo = document.getElementById(id);
+                const aberto = campo.type === 'text';
+                campo.type = aberto ? 'password' : 'text';
+                botao.innerHTML = aberto ? olhoAberto : olhoFechado;
+            }
+        </script>
+
+        <%--=====VLibras (acessibilidade em Libras)=====--%>
+            <div vw class="enabled">
+                <div vw-access-button class="active"></div>
+                <div vw-plugin-wrapper>
+                    <div class="vw-plugin-top-wrapper"></div>
+                </div>
+            </div>
+            <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+            <script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
+
+            <%--=====Botao flutuante do WhatsApp=====--%>
+                <a href="https://wa.me/5513991889820?text=Ola!%20Preciso%20de%20ajuda%20com%20a%20Cesta%20Solidaria"
+                    target="_blank" rel="noopener"
+                    style="position:fixed;right:20px;bottom:20px;background:#25D366;color:#fff;padding:12px 16px;border-radius:9999px;text-decoration:none;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:999">
+                    WhatsApp
+                </a>
+
+                <%--=====Chatbot com IA (conversa com o /chat)=====--%>
+                    <style>
+                        @keyframes chatEntraDireita {
+                            from {
+                                opacity: 0;
+                                transform: translateX(30px);
+                            }
+
+                            to {
+                                opacity: 1;
+                                transform: translateX(0);
+                            }
+                        }
+
+                        @keyframes chatEntraEsquerda {
+                            from {
+                                opacity: 0;
+                                transform: translateX(-30px);
+                            }
+
+                            to {
+                                opacity: 1;
+                                transform: translateX(0);
+                            }
+                        }
+
+                        @keyframes chatPisca {
+
+                            0%,
+                            80%,
+                            100% {
+                                opacity: .3;
+                                transform: translateY(0);
+                            }
+
+                            40% {
+                                opacity: 1;
+                                transform: translateY(-4px);
+                            }
+                        }
+                    </style>
+
+                    <div id="chatWidget"
+                        style="position:fixed;left:20px;bottom:20px;z-index:998;font-family:sans-serif">
+
+                        <div id="chatPanel"
+                            style="display:none;flex-direction:column;width:320px;height:430px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.25);overflow:hidden;margin-bottom:10px">
+                            <div
+                                style="background:#2563eb;color:#fff;padding:12px 14px;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+                                <span>Assistente Cesta Solidaria</span>
+                                <button onclick="fecharChat()"
+                                    style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1">&times;</button>
+                            </div>
+                            <div id="chatMsgs"
+                                style="flex:1;overflow-y:auto;padding:12px;background:#f8fafc;font-size:14px"></div>
+                            <div style="display:flex;border-top:1px solid #e5e7eb">
+                                <input id="chatInput" type="text" placeholder="Digite sua mensagem..."
+                                    autocomplete="off"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();enviarChat();}"
+                                    style="flex:1;border:none;padding:12px;font-size:14px;outline:none">
+                                <button onclick="enviarChat()"
+                                    style="background:#2563eb;color:#fff;border:none;padding:0 16px;cursor:pointer;font-size:16px">&#10148;</button>
+                            </div>
+                        </div>
+
+                        <button id="chatToggle" onclick="abrirChat()" title="Fale com a gente"
+                            style="background:#2563eb;color:#fff;border:none;width:56px;height:56px;border-radius:50%;font-size:26px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)">&#128172;</button>
+                    </div>
+
+                    <script>
+                        const CHAT_URL = '${pageContext.request.contextPath}/chat';
+
+                        function abrirChat() {
+                            document.getElementById('chatPanel').style.display = 'flex';
+                            document.getElementById('chatToggle').style.display = 'none';
+                            document.getElementById('chatInput').focus();
+                            const box = document.getElementById('chatMsgs');
+                            if (box.children.length === 0) {
+                                const digitando = mostrarDigitando();
+                                setTimeout(function () {
+                                    digitando.remove();
+                                    addMsg('Ola! Sou o assistente virtual da Cesta Solidaria. Em que posso ajudar? \u{1F916}', 'bot');
+                                }, 1100);
+                            }
+                        }
+
+                        function fecharChat() {
+                            document.getElementById('chatPanel').style.display = 'none';
+                            document.getElementById('chatToggle').style.display = 'block';
+                        }
+
+                        function addMsg(texto, quem) {
+                            const box = document.getElementById('chatMsgs');
+                            const linha = document.createElement('div');
+                            linha.style.margin = '6px 0';
+                            linha.style.textAlign = (quem === 'user') ? 'right' : 'left';
+                            linha.style.animation = (quem === 'user') ? 'chatEntraDireita .28s ease' : 'chatEntraEsquerda .28s ease';
+                            const bolha = document.createElement('span');
+                            bolha.textContent = texto;
+                            bolha.style.cssText = 'display:inline-block;padding:8px 12px;border-radius:12px;max-width:80%;'
+                                + (quem === 'user' ? 'background:#2563eb;color:#fff' : 'background:#e5e7eb;color:#1f2937');
+                            linha.appendChild(bolha);
+                            box.appendChild(linha);
+                            box.scrollTop = box.scrollHeight;
+                            return linha;
+                        }
+
+                        function mostrarDigitando() {
+                            const box = document.getElementById('chatMsgs');
+                            const linha = document.createElement('div');
+                            linha.style.margin = '6px 0';
+                            linha.style.textAlign = 'left';
+                            linha.style.animation = 'chatEntraEsquerda .28s ease';
+                            const bolha = document.createElement('span');
+                            bolha.style.cssText = 'display:inline-block;padding:10px 14px;border-radius:12px;background:#e5e7eb';
+                            const ponto = 'display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:#6b7280;animation:chatPisca 1.2s infinite';
+                            bolha.innerHTML =
+                                '<span style="' + ponto + '"></span>' +
+                                '<span style="' + ponto + ' .2s"></span>' +
+                                '<span style="' + ponto + ' .4s"></span>';
+                            linha.appendChild(bolha);
+                            box.appendChild(linha);
+                            box.scrollTop = box.scrollHeight;
+                            return linha;
+                        }
+
+                        function enviarChat() {
+                            const input = document.getElementById('chatInput');
+                            const msg = input.value.trim();
+                            if (!msg) return;
+                            addMsg(msg, 'user');
+                            input.value = '';
+                            const digitando = mostrarDigitando();
+                            fetch(CHAT_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: 'msg=' + encodeURIComponent(msg)
+                            })
+                                .then(r => r.text())
+                                .then(txt => { digitando.remove(); addMsg(txt, 'bot'); })
+                                .catch(() => { digitando.remove(); addMsg('Erro ao falar com o assistente.', 'bot'); });
+                        }
+                    </script>
+
+                    </body>
+
+                    </html>

@@ -1,0 +1,250 @@
+// =====================================================================
+//  styles.scss  —  FONTE dos estilos (Sass + Tailwind).
+//
+//  Este arquivo NAO e' usado direto pelo navegador. Ele e' compilado para
+//  ../src/main/webapp/css/styles.css (que o Tomcat serve). Fluxo:
+//
+//     styles.scss  --(Dart Sass)-->  dist/compiled.css  --(Tailwind)-->  styles.css
+//
+//  Aqui usamos recursos do Sass (variaveis $, aninhamento, @mixin) e as
+//  diretivas do Tailwind. Rode `npm run build` na pasta frontend/ para gerar.
+// =====================================================================
+
+// ---- Tailwind: injeta reset (base), componentes e utilitarios ----
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ------------------------- Variaveis (Sass) --------------------------
+$cor-primaria:        #2563eb;
+$cor-primaria-escura: #1d4ed8;
+$cor-perigo:          #dc2626;
+$cor-sucesso:         #16a34a;
+$cor-aviso:           #d97706;
+$cor-texto:           #1f2937;
+$cor-texto-suave:     #6b7280;
+$cor-borda:           #e5e7eb;
+$cor-fundo:           #f3f4f6;
+$cor-superficie:      #ffffff;
+
+// Cor da barra do topo (voce pediu azul claro). Troque so aqui:
+$cor-navbar:          #93c5fd;   // azul claro
+$cor-navbar-texto:    #1e3a8a;   // azul escuro (contraste)
+
+$raio:   8px;
+$sombra: 0 1px 3px rgba(0, 0, 0, .1), 0 1px 2px rgba(0, 0, 0, .06);
+
+// --------------------------- Mixin (Sass) ----------------------------
+// Gera um botao a partir das cores; reaproveitado nas variantes.
+@mixin botao($bg, $bg-hover, $cor: #fff) {
+  background: $bg;
+  color: $cor;
+  &:hover { background: $bg-hover; }
+}
+
+// ------------------------------- Base --------------------------------
+// O reset do Tailwind (preflight) zera titulos e listas, entao definimos
+// os titulos aqui explicitamente.
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: $cor-texto;
+  background: $cor-fundo;
+  line-height: 1.5;
+}
+
+h1 { font-size: 1.8rem; font-weight: 700; color: #111827; }
+h2 { font-size: 1.35rem; font-weight: 700; color: #111827; }
+
+// ------------------- Barra de navegacao (sem iframe) -----------------
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: $cor-navbar;
+  padding: 12px 24px;
+
+  .brand {
+    color: $cor-navbar-texto;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    a {
+      color: $cor-navbar-texto;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: $raio;
+
+      &:hover { background: rgba(0, 0, 0, .08); }
+    }
+  }
+
+  .user { color: $cor-navbar-texto; font-size: .9rem; }
+}
+
+// -------------------------- Container --------------------------------
+.container {
+  max-width: 900px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+// --------------------- Mensagens flash (alert) -----------------------
+.alert {
+  padding: 12px 16px;
+  border-radius: $raio;
+  margin-bottom: 16px;
+  border: 1px solid transparent;
+  font-weight: 500;
+
+  &-sucesso { background: #dcfce7; color: #166534; border-color: #86efac; }
+  &-erro    { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  &-info    { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+}
+
+// --------------------------- Cartao / form ---------------------------
+.card {
+  background: $cor-superficie;
+  border: 1px solid $cor-borda;
+  border-radius: $raio;
+  box-shadow: $sombra;
+  padding: 24px;
+
+  // Links de texto dentro do cartao (o preflight tira o sublinhado padrao)
+  p a { color: $cor-primaria; text-decoration: underline; }
+}
+
+.form-grupo {
+  margin-bottom: 16px;
+
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid $cor-borda;
+    border-radius: $raio;
+    font-size: 1rem;
+
+    &:focus { outline: 2px solid $cor-primaria; border-color: $cor-primaria; }
+  }
+}
+
+// ------------------------------ Botoes -------------------------------
+.btn {
+  display: inline-block;
+  padding: 9px 16px;
+  border: none;
+  border-radius: $raio;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  @include botao($cor-primaria, $cor-primaria-escura);
+
+  &-perigo    { @include botao($cor-perigo, #b91c1c); }
+  &-aviso     { @include botao($cor-aviso, #b45309); }
+  &-sucesso   { @include botao($cor-sucesso, #15803d); }
+  &-secundario { @include botao(#e5e7eb, #d1d5db, $cor-texto); }
+  &-pequeno   { padding: 5px 10px; font-size: .85rem; }
+}
+
+// ------------------------------- Selos -------------------------------
+// Selo (badge) colorido para o status na fila da cesta.
+.selo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &-aguardando { background: #fef3c7; color: #92400e; } // ambar
+  &-retirado   { background: #dcfce7; color: #166534; } // verde
+}
+
+// ------------------------------ Tabela -------------------------------
+.tabela-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $cor-superficie;
+  border-radius: $raio;
+  overflow: hidden;
+  box-shadow: $sombra;
+
+  th {
+    background: $cor-primaria;
+    color: #fff;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  td { padding: 10px 12px; border-bottom: 1px solid $cor-borda; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9fafb; }
+}
+.acoes { display: flex; gap: 6px; }
+
+// ---------------------------- Barra de busca -------------------------
+.barra-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.busca {
+  display: flex;
+  gap: 8px;
+
+  input {
+    padding: 9px 12px;
+    border: 1px solid $cor-borda;
+    border-radius: $raio;
+    min-width: 220px;
+  }
+}
+
+// ----------------------------- Paginacao -----------------------------
+.paginacao {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+
+  a, span {
+    padding: 7px 12px;
+    border: 1px solid $cor-borda;
+    border-radius: $raio;
+    text-decoration: none;
+    color: $cor-texto;
+    background: $cor-superficie;
+  }
+  .atual { background: $cor-primaria; color: #fff; border-color: $cor-primaria; }
+}
+
+// ---------------------------- Utilitarios ----------------------------
+.texto-suave { color: $cor-texto-suave; }
+.vazio { text-align: center; color: $cor-texto-suave; padding: 24px; }
+.mt { margin-top: 16px; }
+.rodape {
+  text-align: center;
+  color: $cor-texto-suave;
+  font-size: .85rem;
+  padding: 24px;
+}
+.grade-links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
