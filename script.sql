@@ -22,13 +22,16 @@ CREATE TABLE IF NOT EXISTS `pessoa` (
     `senha`      VARCHAR(100) DEFAULT NULL,
     `status`     VARCHAR(20)  NOT NULL DEFAULT 'aguardando',
     `papel`      VARCHAR(20)  NOT NULL DEFAULT 'USER',
+    `reset_token`  VARCHAR(100) DEFAULT NULL,
+    `reset_expira` DATETIME     DEFAULT NULL,
     PRIMARY KEY (`idPessoa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Se você JÁ tinha a tabela criada antes, rode uma vez cada linha que faltar:
 --   ALTER TABLE `pessoa` ADD COLUMN `status` VARCHAR(20) NOT NULL DEFAULT 'aguardando';
 --   ALTER TABLE `pessoa` ADD COLUMN `papel`  VARCHAR(20) NOT NULL DEFAULT 'USER';
-
+--   ALTER TABLE `pessoa` ADD COLUMN `reset_token`  VARCHAR(100) DEFAULT NULL;
+--   ALTER TABLE `pessoa` ADD COLUMN `reset_expira` DATETIME     DEFAULT NULL
 -- ------------------------------------------------------------
 -- Administrador inicial (idempotente: só cria se ainda não existir).
 --   e-mail: admin@cesta.local

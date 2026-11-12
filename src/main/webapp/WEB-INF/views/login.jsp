@@ -38,10 +38,13 @@
                     <button class="btn" type="submit">Entrar</button>
                 </form>
 
+                <!-- DEPOIS (adiciona o link de esqueci acima) -->
                 <p class="mt texto-suave">
+                    <a href="${pageContext.request.contextPath}/esqueci">Esqueci minha senha</a>
+                </p>
+                <p class="texto-suave">
                     Nao tem conta?
                     <a href="${pageContext.request.contextPath}/pessoas?acao=novo">Criar cadastro</a>
                 </p>
-            </div>
 
-            <%@ include file="/WEB-INF/views/layout/footer.jspf" %>
+                <%@ include file="/WEB-INF/views/layout/footer.jspf" %>

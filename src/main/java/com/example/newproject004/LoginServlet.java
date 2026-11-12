@@ -1,5 +1,7 @@
 package com.example.newproject004;
 
+import java.io.IOException;
+
 import classes.Pessoa;
 import dao.PessoaDAO;
 import jakarta.servlet.ServletException;
@@ -9,14 +11,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-
 /**
  * Autenticacao por sessao.
  *
- * <p>Este servlet finalmente da USO ao BCrypt que ja existia no projeto:
+ * <p>
+ * Este servlet finalmente da USO ao BCrypt que ja existia no projeto:
  * antes {@code Pessoa.verificarSenha} so era chamado nos testes. Agora o
- * login confere a senha digitada contra o hash guardado no banco.</p>
+ * login confere a senha digitada contra o hash guardado no banco.
+ * </p>
  *
  * <pre>
  *   GET  /login             -> mostra o formulario
@@ -56,8 +58,17 @@ public class LoginServlet extends HttpServlet {
 
         // Mesma mensagem para "email nao existe" e "senha errada":
         // nao revela a um atacante se o e-mail esta ou nao cadastrado.
+        // DEPOIS
         if (pessoa == null || !Pessoa.verificarSenha(senha, pessoa.getSenha())) {
             req.setAttribute("erro", "E-mail ou senha invalidos.");
+            req.setAttribute("email", email);
+            req.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(req, resp);
+            return;
+        }
+
+        // Conta ainda nao confirmada por e-mail: barra o login ate ativar.
+        if (!dao.emailConfirmado(email)) {
+            req.setAttribute("erro", "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.");
             req.setAttribute("email", email);
             req.getRequestDispatcher("/WEB-INF/views/login.jsp").forward(req, resp);
             return;
@@ -71,7 +82,7 @@ public class LoginServlet extends HttpServlet {
         HttpSession sessao = req.getSession(true);
         sessao.setAttribute("usuarioLogado", pessoa.getNomePessoa());
         sessao.setAttribute("usuarioId", pessoa.getIdPessoa());
-        sessao.setAttribute("papel", pessoa.getPapel());   // USER ou ADMIN
+        sessao.setAttribute("papel", pessoa.getPapel()); // USER ou ADMIN
         sessao.setAttribute("msg", "Bem-vindo(a), " + pessoa.getNomePessoa() + "!");
         sessao.setAttribute("msgTipo", "sucesso");
 
@@ -80,4 +91,3 @@ public class LoginServlet extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + destino);
     }
 }
-

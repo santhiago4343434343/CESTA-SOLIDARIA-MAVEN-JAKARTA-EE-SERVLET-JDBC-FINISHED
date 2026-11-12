@@ -2,6 +2,7 @@ package com.example.newproject004;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import classes.Pessoa;
 import dao.PessoaDAO;
@@ -147,30 +148,42 @@ public class PessoaServlet extends HttpServlet {
             return;
         }
 
+        // >>> trava de email duplicado <<<
+        if (dao.buscarPorEmail(email) != null) {
+            reexibirCadastro(req, resp, nome, email, "Este e-mail ja esta cadastrado.");
+            return;
+        }
+
         Pessoa p = new Pessoa();
         p.setNomePessoa(nome);
         p.setEmail(email);
         p.setSenha(senha);
         boolean inserido = dao.inserir(p);
 
-        // Apos cadastrar, dispara (em segundo plano) o e-mail de confirmacao.
+        // Apos cadastrar, gera o token e dispara (em segundo plano) o e-mail de
+        // ATIVACAO.
         if (inserido) {
-            EmailService.enviarConfirmacaoAsync(nome, email);
+            String token = UUID.randomUUID().toString().replace("-", "");
+            dao.salvarTokenConfirmacao(email, token);
+            String base = req.getScheme() + "://" + req.getServerName()
+                    + ":" + req.getServerPort() + req.getContextPath();
+            String link = base + "/confirmar?token=" + token;
+            EmailService.enviarAtivacaoAsync(nome, email, link);
         }
 
-        // Se ja estava logado (um admin cadastrando alguem) volta para a lista;
-        // se era um visitante se cadastrando, manda para o login.
+        // Agora a mensagem avisa pra conferir o e-mail e ativar.
         if (estaLogado(req)) {
-            flash(req, "sucesso", "Pessoa cadastrada com sucesso.");
+            flash(req, "sucesso", "Pessoa cadastrada. Um e-mail de ativacao foi enviado.");
             resp.sendRedirect(req.getContextPath() + "/pessoas");
         } else {
-            flash(req, "sucesso", "Conta criada! Faca login para continuar.");
+            flash(req, "sucesso", "Conta criada! Enviamos um link de ativacao para o seu e-mail.");
             resp.sendRedirect(req.getContextPath() + "/login");
         }
     }
 
     private void atualizar(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
+
         Pessoa p = new Pessoa();
         p.setIdPessoa(lerId(req));
         p.setNomePessoa(req.getParameter("nome"));

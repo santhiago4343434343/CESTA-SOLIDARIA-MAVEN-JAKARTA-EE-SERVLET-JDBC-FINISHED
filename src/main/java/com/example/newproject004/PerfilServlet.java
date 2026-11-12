@@ -62,6 +62,7 @@ public class PerfilServlet extends HttpServlet {
             flash(req, "erro", "Preencha nome e e-mail.");
             return;
         }
+        
         Pessoa p = new Pessoa();
         p.setIdPessoa(id);                         // id da sessao, nao do form
         p.setNomePessoa(nome);

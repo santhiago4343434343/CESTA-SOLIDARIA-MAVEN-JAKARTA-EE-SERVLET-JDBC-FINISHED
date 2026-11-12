@@ -1,14 +1,14 @@
 package dao;
 
-import classes.Pessoa;
-import utils.Conexao;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import classes.Pessoa;
+import utils.Conexao;
 
 /**
  * DAO (Data Access Object) da Pessoa: concentra todo o SQL/JDBC.
@@ -83,6 +83,110 @@ public class PessoaDAO {
             return true;
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar senha: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Gera/guarda o token de reset para o e-mail (expira em N minutos).
+     * Retorna true se o e-mail existe (uma linha afetada).
+     */
+    public boolean salvarTokenReset(String email, String token, int minutos) {
+        String sql = "UPDATE pessoa SET reset_token = ?, "
+                + "reset_expira = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE email = ?";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, token);
+            stm.setInt(2, minutos);
+            stm.setString(3, email);
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao salvar token de reset: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Retorna a pessoa dona de um token AINDA VÁLIDO (não expirado), ou null. */
+    public Pessoa buscarPorTokenValido(String token) {
+        String sql = "SELECT idpessoa, nomepessoa, email, status, papel FROM pessoa "
+                + "WHERE reset_token = ? AND reset_expira > NOW()";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, token);
+            try (ResultSet rs = stm.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao buscar por token: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Redefine a senha com um token válido e LIMPA o token (não serve 2x).
+     * Retorna true se o token era válido e a senha foi trocada.
+     */
+    public boolean redefinirSenhaPorToken(String token, String novaSenhaPlain) {
+        String sql = "UPDATE pessoa SET senha = ?, reset_token = NULL, reset_expira = NULL "
+                + "WHERE reset_token = ? AND reset_expira > NOW()";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, Pessoa.gerarHash(novaSenhaPlain));
+            stm.setString(2, token);
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao redefinir senha: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Guarda o token de confirmacao de uma conta recem-criada.
+     * Retorna true se o e-mail existe (uma linha afetada).
+     */
+    public boolean salvarTokenConfirmacao(String email, String token) {
+        String sql = "UPDATE pessoa SET confirmacao_token = ? WHERE email = ?";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, token);
+            stm.setString(2, email);
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao salvar token de confirmacao: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ativa a conta cujo token bate e LIMPA o token (nao serve 2x).
+     * Retorna true se o token era valido.
+     */
+    public boolean confirmarEmailPorToken(String token) {
+        String sql = "UPDATE pessoa SET email_confirmado = 1, confirmacao_token = NULL "
+                + "WHERE confirmacao_token = ?";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, token);
+            return stm.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Erro ao confirmar e-mail: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Retorna true se a conta do e-mail ja esta confirmada (ativa). */
+    public boolean emailConfirmado(String email) {
+        String sql = "SELECT email_confirmado FROM pessoa WHERE email = ?";
+        try (Connection con = Conexao.getConnection();
+                PreparedStatement stm = con.prepareStatement(sql)) {
+            stm.setString(1, email);
+            try (ResultSet rs = stm.executeQuery()) {
+                return rs.next() && rs.getBoolean("email_confirmado");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar confirmacao: " + e.getMessage());
             return false;
         }
     }
