@@ -91,7 +91,7 @@ public class EmailService {
     /** Corpo HTML do e-mail de redefinição de senha. */
     private static String corpoResetHtml(String nome, String link) {
         return "<div style=\"font-family:sans-serif;max-width:520px;margin:auto;color:#1f2937\">"
-                + "<h2 style=\"color:#2563eb\">Cesta Solidaria</h2>"
+                + "<h2 style=\"color:#2563eb\">&#x1F9FA; Cesta Solidaria</h2>"
                 + "<p>Ola, <strong>" + escapar(nome) + "</strong>!</p>"
                 + "<p>Recebemos um pedido para redefinir sua senha. Clique no botao abaixo "
                 + "(o link expira em 1 hora):</p>"
