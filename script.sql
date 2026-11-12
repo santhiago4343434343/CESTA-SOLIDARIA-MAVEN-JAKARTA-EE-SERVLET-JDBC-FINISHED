@@ -18,12 +18,14 @@ USE `tomcat_database`;
 CREATE TABLE IF NOT EXISTS `pessoa` (
     `idPessoa`   INT(11)      NOT NULL AUTO_INCREMENT,
     `nomePessoa` VARCHAR(100) DEFAULT NULL,
-    `email`      VARCHAR(100) DEFAULT NULL,
+    `email`      VARCHAR(100) DEFAULT NULL UNIQUE,
     `senha`      VARCHAR(100) DEFAULT NULL,
     `status`     VARCHAR(20)  NOT NULL DEFAULT 'aguardando',
     `papel`      VARCHAR(20)  NOT NULL DEFAULT 'USER',
-    `reset_token`  VARCHAR(100) DEFAULT NULL,
-    `reset_expira` DATETIME     DEFAULT NULL,
+    `reset_token`       VARCHAR(100) DEFAULT NULL,
+    `reset_expira`      DATETIME     DEFAULT NULL,
+    `email_confirmado`  TINYINT(1)   DEFAULT 0,
+    `confirmacao_token` VARCHAR(100) DEFAULT NULL,
     PRIMARY KEY (`idPessoa`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -38,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `pessoa` (
 --   senha:  admin123   (hash BCrypt abaixo)
 -- Troque a senha depois pela tela "Meu cadastro".
 -- ------------------------------------------------------------
-INSERT INTO `pessoa` (`nomePessoa`, `email`, `senha`, `status`, `papel`)
+INSERT INTO `pessoa` (`nomePessoa`, `email`, `senha`, `status`, `papel`, `email_confirmado`)
 SELECT 'Administrador', 'admin@cesta.local',
        '$2a$10$J/qAvmVCoYLr83JizvUJp.nSb.NCjha7/cq75EXVz8AQPqVaJgh/a',
-       'aguardando', 'ADMIN'
+       'aguardando', 'ADMIN', 1
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM `pessoa` WHERE `email` = 'admin@cesta.local');
